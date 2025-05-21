@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -7,6 +6,8 @@ import ExampleCard from '@/components/ExampleCard';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import { generateUUID } from '@/lib/utils';
 import { savePromptToHistory } from '@/lib/historyUtils';
+import { generateMathAnimation } from '@/lib/gemini';
+import { uploadVideo } from '@/lib/cloudinary';
 import { toast } from '@/hooks/use-toast';
 
 const examplePrompts = [
@@ -22,36 +23,49 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmitPrompt = (prompt: string) => {
+  const handleSubmitPrompt = async (prompt: string) => {
     setLoading(true);
     
-    // Mock API call - in a real app, this would hit a backend
-    // For demo purposes, we'll simulate a successful API call after a delay
-    const animationId = generateUUID();
-    
-    setTimeout(() => {
-      setLoading(false);
-
-      // Save the prompt to history
+    try {
+      // Generate animation script using Gemini
+      const animationScript = await generateMathAnimation(prompt);
+      
+      // In a real implementation, this would:
+      // 1. Send the script to a backend service that renders the animation
+      // 2. Get back a video file
+      // 3. Upload that video to Cloudinary
+      
+      // For demo purposes, we'll simulate this process
+      const animationId = generateUUID();
+      
+      // Mock video URL - in reality this would come from Cloudinary
+      const videoUrl = 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
+      
+      // Save to history
       savePromptToHistory({
         id: animationId,
         prompt,
         timestamp: new Date().toISOString(),
-        // In a real implementation, these would come from the backend
-        videoUrl: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+        videoUrl,
         thumbnailUrl: 'https://placehold.co/600x400/112238/FFFFFF/png?text=Math+Animation'
       });
 
-      // Show success toast
       toast({
         title: "Animation created!",
         description: "Your math animation is ready to view.",
       });
 
-      // Navigate to result page
       navigate(`/result/${animationId}`);
-      
-    }, 3000); // Simulating a 3-second API call
+    } catch (error) {
+      console.error('Error creating animation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create animation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleExampleClick = (prompt: string) => {
@@ -121,7 +135,6 @@ const Index = () => {
                 </div>
                 <div className="md:w-1/2 bg-secondary/30 rounded-lg aspect-video flex items-center justify-center p-4 border border-border">
                   <div className="text-center">
-                    {/* This would be an animated GIF or video in the real implementation */}
                     <p className="text-lg font-medium gradient-text">Animation Preview</p>
                     <p className="text-sm text-muted-foreground mt-2">
                       (Placeholder for demo animation)
