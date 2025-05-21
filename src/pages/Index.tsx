@@ -6,7 +6,7 @@ import ExampleCard from '@/components/ExampleCard';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import { generateUUID } from '@/lib/utils';
 import { savePromptToHistory } from '@/lib/historyUtils';
-import { generateMathAnimation } from '@/lib/gemini';
+import { generateMathAnimation } from '@/lib/manim';
 import { uploadVideo } from '@/lib/cloudinary';
 import { toast } from '@/hooks/use-toast';
 
@@ -27,19 +27,17 @@ const Index = () => {
     setLoading(true);
     
     try {
-      // Generate animation script using Gemini
-      const animationScript = await generateMathAnimation(prompt);
+      // Generate animation using Manim.js
+      const animationBlob = await generateMathAnimation(prompt);
       
-      // In a real implementation, this would:
-      // 1. Send the script to a backend service that renders the animation
-      // 2. Get back a video file
-      // 3. Upload that video to Cloudinary
+      // Convert blob to file
+      const videoFile = new File([animationBlob], 'animation.mp4', { type: 'video/mp4' });
       
-      // For demo purposes, we'll simulate this process
+      // Upload to Cloudinary
+      const videoUrl = await uploadVideo(videoFile);
+      
+      // Generate unique ID for the animation
       const animationId = generateUUID();
-      
-      // Mock video URL - in reality this would come from Cloudinary
-      const videoUrl = 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4';
       
       // Save to history
       savePromptToHistory({
@@ -47,7 +45,7 @@ const Index = () => {
         prompt,
         timestamp: new Date().toISOString(),
         videoUrl,
-        thumbnailUrl: 'https://placehold.co/600x400/112238/FFFFFF/png?text=Math+Animation'
+        thumbnailUrl: `${videoUrl.split('upload/')[0]}upload/w_600,h_400,c_fill,g_auto/${videoUrl.split('upload/')[1]}`
       });
 
       toast({
@@ -114,9 +112,9 @@ const Index = () => {
                 <div className="md:w-1/2 space-y-4">
                   <h2 className="text-2xl font-playfair font-bold">How It Works</h2>
                   <p className="text-muted-foreground">
-                    Visual Math Animator uses AI to understand your math concept and generates 
-                    a custom animation that brings it to life. Perfect for visualizing abstract 
-                    concepts in Linear Algebra and Calculus.
+                    Visual Math Animator uses Manim.js to create beautiful mathematical animations
+                    directly in your browser. Perfect for visualizing abstract concepts in Linear
+                    Algebra and Calculus.
                   </p>
                   <ul className="space-y-2">
                     <li className="flex items-start">
@@ -125,11 +123,11 @@ const Index = () => {
                     </li>
                     <li className="flex items-start">
                       <span className="inline-block mr-2 text-primary">2.</span>
-                      <span>Our AI translates your prompt into a Manim animation script</span>
+                      <span>Our engine converts your prompt into Manim.js animations</span>
                     </li>
                     <li className="flex items-start">
                       <span className="inline-block mr-2 text-primary">3.</span>
-                      <span>Watch your custom animation render in seconds</span>
+                      <span>Watch your custom animation render in real-time</span>
                     </li>
                   </ul>
                 </div>
