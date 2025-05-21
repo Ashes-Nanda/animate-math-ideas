@@ -1,38 +1,44 @@
 
 import React from 'react';
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
+import { Button } from '@/components/ui/button';
 
 const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex flex-col math-pattern-background">
       <Header />
       
-      <div className="flex-grow flex items-center justify-center">
-        <div className="text-center space-y-6">
-          <h1 className="text-7xl font-playfair font-bold gradient-text">404</h1>
-          <p className="text-2xl font-medium">Page not found</p>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            The animation you're looking for seems to have transformed into another dimension.
-          </p>
-          <Link 
-            to="/"
-            className="inline-block px-6 py-3 mt-6 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
-          >
-            Return to Home
-          </Link>
+      <main className="flex-grow container max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center h-full text-center py-12">
+          <div className="bg-card/30 backdrop-blur-sm rounded-lg p-8 border border-border max-w-md">
+            <h1 className="text-4xl font-playfair font-bold mb-4">404</h1>
+            <p className="text-xl mb-6">Page not found</p>
+            <p className="text-muted-foreground mb-8">
+              The page you are looking for doesn't exist or has been moved.
+            </p>
+            <Button 
+              onClick={() => navigate('/')}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
+            >
+              Return Home
+            </Button>
+          </div>
         </div>
-      </div>
+      </main>
+      
+      <footer className="container max-w-7xl mx-auto px-4 py-6 border-t border-gray-800/50">
+        <div className="flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
+          <p>© 2025 Visual Math Animator</p>
+          <div className="flex space-x-6 mt-4 md:mt-0">
+            <a href="#" className="hover:text-primary transition-colors">Terms</a>
+            <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+            <a href="#" className="hover:text-primary transition-colors">Contact</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

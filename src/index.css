@@ -66,6 +66,49 @@
 
 /* Gradient text effect */
 .gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 animate-gradient-move;
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400;
+  animation: gradient-move 8s ease infinite;
   background-size: 200% 200%;
+}
+
+@keyframes gradient-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animation for subtle pulse effect */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s infinite ease-in-out;
+}
+
+/* Loading animation direction */
+.direction-reverse {
+  animation-direction: reverse;
+}
+
+/* Loading animation duration */
+.duration-1000 {
+  animation-duration: 1s;
+}
+.duration-700 {
+  animation-duration: 700ms;
+}
+.duration-500 {
+  animation-duration: 500ms;
 }

@@ -17,6 +17,12 @@ const PromptInput: React.FC<PromptInputProps> = ({ onSubmit, isLoading = false }
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      handleSubmit();
+    }
+  };
+
   return (
     <div className="w-full space-y-4">
       <Textarea
@@ -24,15 +30,21 @@ const PromptInput: React.FC<PromptInputProps> = ({ onSubmit, isLoading = false }
         className="min-h-32 bg-secondary/40 border-secondary placeholder:text-muted-foreground/70 text-lg"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
+        onKeyDown={handleKeyDown}
         disabled={isLoading}
       />
-      <Button 
-        onClick={handleSubmit} 
-        disabled={!prompt.trim() || isLoading}
-        className="w-full md:w-auto text-md px-6 py-6 h-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
-      >
-        {isLoading ? 'Generating Animation...' : 'Generate Animation'}
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button 
+          onClick={handleSubmit} 
+          disabled={!prompt.trim() || isLoading}
+          className="w-full md:w-auto text-md px-6 py-6 h-auto bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90"
+        >
+          {isLoading ? 'Generating Animation...' : 'Generate Animation'}
+        </Button>
+        <p className="text-xs text-muted-foreground hidden md:block">
+          Press Ctrl+Enter to submit
+        </p>
+      </div>
     </div>
   );
 };

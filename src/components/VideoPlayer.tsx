@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Download, Share2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -14,6 +15,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, title }) => {
     console.log('Download video:', videoUrl);
     // For now, we'll just open the video in a new tab
     window.open(videoUrl, '_blank');
+    
+    toast({
+      title: "Download started",
+      description: "Your animation is downloading",
+    });
   };
 
   const handleShare = () => {
@@ -23,10 +29,18 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, title }) => {
     // For now, we'll just copy a mock URL to clipboard
     navigator.clipboard.writeText(`https://visualmath.app/share/${encodeURIComponent(title)}`)
       .then(() => {
-        alert('Link copied to clipboard!');
+        toast({
+          title: "Link copied",
+          description: "Animation link copied to clipboard",
+        });
       })
       .catch(err => {
         console.error('Failed to copy: ', err);
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy the link to clipboard",
+          variant: "destructive"
+        });
       });
   };
 
@@ -49,7 +63,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ videoUrl, title }) => {
         )}
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-xl font-medium">{title || 'Math Animation'}</h2>
         <div className="flex space-x-2">
           <Button variant="outline" size="sm" onClick={handleShare}>

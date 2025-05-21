@@ -42,6 +42,12 @@ const Index = () => {
         thumbnailUrl: 'https://placehold.co/600x400/112238/FFFFFF/png?text=Math+Animation'
       });
 
+      // Show success toast
+      toast({
+        title: "Animation created!",
+        description: "Your math animation is ready to view.",
+      });
+
       // Navigate to result page
       navigate(`/result/${animationId}`);
       
