@@ -6,8 +6,12 @@ export const uploadVideo = async (videoFile: File) => {
   try {
     const formData = new FormData();
     formData.append('file', videoFile);
-    formData.append('upload_preset', 'math_animations');
+    // Using 'ml_default' as the upload preset instead of 'math_animations'
+    // This is the default preset that exists on all Cloudinary accounts
+    formData.append('upload_preset', 'ml_default');
     formData.append('cloud_name', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
+    
+    console.log('Uploading to Cloudinary with cloud name:', import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
     
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/video/upload`,
@@ -18,10 +22,13 @@ export const uploadVideo = async (videoFile: File) => {
     );
 
     if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Cloudinary error response:', errorData);
       throw new Error(`Upload failed with status: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('Upload successful:', data);
     return data.secure_url;
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error);
