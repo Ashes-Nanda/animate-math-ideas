@@ -6,7 +6,7 @@ import ExampleCard from '@/components/ExampleCard';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import { generateUUID } from '@/lib/utils';
 import { savePromptToHistory } from '@/lib/historyUtils';
-import { generateMathAnimation } from '@/lib/manim';
+import { generateMathAnimation, renderAnimation } from '@/lib/gemini';
 import { uploadVideo } from '@/lib/cloudinary';
 import { toast } from '@/hooks/use-toast';
 
@@ -27,11 +27,14 @@ const Index = () => {
     setLoading(true);
     
     try {
-      // Generate animation using Manim.js
-      const animationBlob = await generateMathAnimation(prompt);
+      // Generate animation instructions using Gemini
+      const instructions = await generateMathAnimation(prompt);
+      
+      // Render the animation using Three.js
+      const animationBlob = await renderAnimation(instructions);
       
       // Convert blob to file
-      const videoFile = new File([animationBlob], 'animation.mp4', { type: 'video/mp4' });
+      const videoFile = new File([animationBlob], 'animation.webm', { type: 'video/webm' });
       
       // Upload to Cloudinary
       const videoUrl = await uploadVideo(videoFile);
@@ -112,9 +115,9 @@ const Index = () => {
                 <div className="md:w-1/2 space-y-4">
                   <h2 className="text-2xl font-playfair font-bold">How It Works</h2>
                   <p className="text-muted-foreground">
-                    Visual Math Animator uses Manim.js to create beautiful mathematical animations
-                    directly in your browser. Perfect for visualizing abstract concepts in Linear
-                    Algebra and Calculus.
+                    Visual Math Animator uses Google's Gemini AI to understand mathematical concepts
+                    and convert them into beautiful animations using Three.js. Perfect for visualizing
+                    abstract concepts in Linear Algebra and Calculus.
                   </p>
                   <ul className="space-y-2">
                     <li className="flex items-start">
@@ -123,11 +126,11 @@ const Index = () => {
                     </li>
                     <li className="flex items-start">
                       <span className="inline-block mr-2 text-primary">2.</span>
-                      <span>Our engine converts your prompt into Manim.js animations</span>
+                      <span>Gemini AI converts your prompt into animation instructions</span>
                     </li>
                     <li className="flex items-start">
                       <span className="inline-block mr-2 text-primary">3.</span>
-                      <span>Watch your custom animation render in real-time</span>
+                      <span>Three.js renders a beautiful, interactive animation</span>
                     </li>
                   </ul>
                 </div>

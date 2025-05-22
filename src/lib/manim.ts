@@ -1,4 +1,4 @@
-import { Scene, Circle, Square, Animation } from 'manim.js';
+import * as THREE from 'three';
 
 interface AnimationConfig {
   duration: number;
@@ -10,79 +10,136 @@ export const generateMathAnimation = async (
   prompt: string, 
   config: AnimationConfig = { duration: 5, width: 800, height: 600 }
 ) => {
-  // Create a new scene
-  const scene = new Scene({
-    width: config.width,
-    height: config.height,
-    background: '#1a1a1a'
-  });
-
-  // Parse the prompt and create appropriate animations
-  const animations = parsePromptToAnimations(prompt);
+  // Create scene, camera and renderer
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, config.width / config.height, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
   
-  // Add animations to the scene
-  animations.forEach(animation => {
-    scene.add(animation);
-  });
-
-  // Render the animation
-  const videoBlob = await scene.render();
+  renderer.setSize(config.width, config.height);
+  renderer.setClearColor(0x1a1a1a); // Dark background
+  
+  // Parse the prompt and create appropriate animations
+  const objects = parsePromptToObjects(prompt, scene);
+  
+  // Position camera
+  camera.position.z = 5;
+  
+  // Create animation frames
+  const frames: Uint8Array[] = [];
+  const totalFrames = config.duration * 60; // 60fps
+  
+  for (let i = 0; i < totalFrames; i++) {
+    // Update animations
+    const t = i / totalFrames;
+    objects.forEach(obj => {
+      if (obj.animate) {
+        obj.animate(t);
+      }
+    });
+    
+    // Render frame
+    renderer.render(scene, camera);
+    
+    // Capture frame
+    const buffer = new Uint8Array(config.width * config.height * 4);
+    renderer.getContext().readPixels(
+      0, 0, config.width, config.height,
+      renderer.getContext().RGBA,
+      renderer.getContext().UNSIGNED_BYTE,
+      buffer
+    );
+    frames.push(buffer);
+  }
+  
+  // Convert frames to video blob
+  const videoBlob = await framesToVideo(frames, config);
   return videoBlob;
 };
 
-function parsePromptToAnimations(prompt: string): Animation[] {
-  const animations: Animation[] = [];
+function parsePromptToObjects(prompt: string, scene: THREE.Scene) {
+  const objects: Array<THREE.Object3D & { animate?: (t: number) => void }> = [];
   const promptLower = prompt.toLowerCase();
 
-  // Basic animation patterns based on keywords
+  // Basic shapes and concepts
   if (promptLower.includes('circle')) {
-    const circle = new Circle({
-      radius: 1,
-      stroke: '#3b82f6',
-      fill: 'transparent'
+    const geometry = new THREE.CircleGeometry(1, 32);
+    const material = new THREE.MeshBasicMaterial({ 
+      color: 0x3b82f6,
+      wireframe: true
     });
-    animations.push(circle.create());
+    const circle = new THREE.Mesh(geometry, material);
+    circle.animate = (t: number) => {
+      circle.rotation.z = t * Math.PI * 2;
+    };
+    scene.add(circle);
+    objects.push(circle);
   }
 
-  if (promptLower.includes('square')) {
-    const square = new Square({
-      sideLength: 2,
-      stroke: '#8b5cf6',
-      fill: 'transparent'
-    });
-    animations.push(square.create());
-  }
-
-  // Add more patterns for different mathematical concepts
   if (promptLower.includes('vector')) {
-    // Create vector animations
-    animations.push(...createVectorAnimations());
-  }
-
-  if (promptLower.includes('function') || promptLower.includes('graph')) {
-    // Create function graph animations
-    animations.push(...createFunctionAnimations());
+    const origin = new THREE.Vector3(0, 0, 0);
+    const direction = new THREE.Vector3(1, 1, 0).normalize();
+    const length = 2;
+    const color = 0x8b5cf6;
+    
+    const arrow = new THREE.ArrowHelper(direction, origin, length, color);
+    arrow.animate = (t: number) => {
+      arrow.rotation.z = t * Math.PI;
+    };
+    scene.add(arrow);
+    objects.push(arrow);
   }
 
   if (promptLower.includes('matrix') || promptLower.includes('transformation')) {
-    // Create matrix transformation animations
-    animations.push(...createMatrixAnimations());
+    // Create a grid of points
+    const gridSize = 5;
+    const points = [];
+    const geometry = new THREE.BufferGeometry();
+    
+    for (let i = -gridSize; i <= gridSize; i++) {
+      for (let j = -gridSize; j <= gridSize; j++) {
+        points.push(i/gridSize, j/gridSize, 0);
+      }
+    }
+    
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+    const material = new THREE.PointsMaterial({ color: 0xa855f7, size: 0.05 });
+    const pointCloud = new THREE.Points(geometry, material);
+    
+    pointCloud.animate = (t: number) => {
+      // Apply transformation matrix
+      const matrix = new THREE.Matrix4();
+      matrix.makeRotationZ(t * Math.PI);
+      matrix.scale(new THREE.Vector3(Math.cos(t * Math.PI), Math.sin(t * Math.PI), 1));
+      pointCloud.matrix.copy(matrix);
+      pointCloud.matrixAutoUpdate = false;
+    };
+    
+    scene.add(pointCloud);
+    objects.push(pointCloud);
   }
 
-  return animations;
+  return objects;
 }
 
-function createVectorAnimations(): Animation[] {
-  // Implementation for vector animations
-  return [];
-}
-
-function createFunctionAnimations(): Animation[] {
-  // Implementation for function animations
-  return [];
-}
-
-function createMatrixAnimations(): Animation[] {
-  // Implementation for matrix transformation animations
-  return [];
+async function framesToVideo(frames: Uint8Array[], config: AnimationConfig): Promise<Blob> {
+  // This is a simplified version - in a real implementation,
+  // you would use WebCodecs API or a similar solution to create
+  // a proper video file. For now, we'll create a simple animated GIF
+  // or return the first frame as a PNG.
+  
+  // For demo purposes, return a static image of the first frame
+  const canvas = document.createElement('canvas');
+  canvas.width = config.width;
+  canvas.height = config.height;
+  const ctx = canvas.getContext('2d')!;
+  
+  const imageData = ctx.createImageData(config.width, config.height);
+  imageData.data.set(frames[0]);
+  ctx.putImageData(imageData, 0, 0);
+  
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(blob!);
+    }, 'image/png');
+  });
 }
