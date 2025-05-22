@@ -1,9 +1,16 @@
+
 import * as THREE from 'three';
 
 interface AnimationConfig {
   duration: number;
   width: number;
   height: number;
+}
+
+// Define a custom interface that extends Three.js objects with our animate method
+interface AnimatableObject {
+  object: THREE.Object3D;
+  animate: (t: number) => void;
 }
 
 export const generateMathAnimation = async (
@@ -19,7 +26,7 @@ export const generateMathAnimation = async (
   renderer.setClearColor(0x1a1a1a); // Dark background
   
   // Parse the prompt and create appropriate animations
-  const objects = parsePromptToObjects(prompt, scene);
+  const animatableObjects = parsePromptToObjects(prompt, scene);
   
   // Position camera
   camera.position.z = 5;
@@ -31,10 +38,8 @@ export const generateMathAnimation = async (
   for (let i = 0; i < totalFrames; i++) {
     // Update animations
     const t = i / totalFrames;
-    objects.forEach(obj => {
-      if (obj.animate) {
-        obj.animate(t);
-      }
+    animatableObjects.forEach(obj => {
+      obj.animate(t);
     });
     
     // Render frame
@@ -56,8 +61,8 @@ export const generateMathAnimation = async (
   return videoBlob;
 };
 
-function parsePromptToObjects(prompt: string, scene: THREE.Scene) {
-  const objects: Array<THREE.Object3D & { animate?: (t: number) => void }> = [];
+function parsePromptToObjects(prompt: string, scene: THREE.Scene): AnimatableObject[] {
+  const animatableObjects: AnimatableObject[] = [];
   const promptLower = prompt.toLowerCase();
 
   // Basic shapes and concepts
@@ -68,11 +73,15 @@ function parsePromptToObjects(prompt: string, scene: THREE.Scene) {
       wireframe: true
     });
     const circle = new THREE.Mesh(geometry, material);
-    circle.animate = (t: number) => {
-      circle.rotation.z = t * Math.PI * 2;
-    };
     scene.add(circle);
-    objects.push(circle);
+    
+    // Create an animatable object with the circle and its animation function
+    animatableObjects.push({
+      object: circle,
+      animate: (t: number) => {
+        circle.rotation.z = t * Math.PI * 2;
+      }
+    });
   }
 
   if (promptLower.includes('vector')) {
@@ -82,11 +91,15 @@ function parsePromptToObjects(prompt: string, scene: THREE.Scene) {
     const color = 0x8b5cf6;
     
     const arrow = new THREE.ArrowHelper(direction, origin, length, color);
-    arrow.animate = (t: number) => {
-      arrow.rotation.z = t * Math.PI;
-    };
     scene.add(arrow);
-    objects.push(arrow);
+    
+    // Create an animatable object with the arrow and its animation function
+    animatableObjects.push({
+      object: arrow,
+      animate: (t: number) => {
+        arrow.rotation.z = t * Math.PI;
+      }
+    });
   }
 
   if (promptLower.includes('matrix') || promptLower.includes('transformation')) {
@@ -104,21 +117,23 @@ function parsePromptToObjects(prompt: string, scene: THREE.Scene) {
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
     const material = new THREE.PointsMaterial({ color: 0xa855f7, size: 0.05 });
     const pointCloud = new THREE.Points(geometry, material);
-    
-    pointCloud.animate = (t: number) => {
-      // Apply transformation matrix
-      const matrix = new THREE.Matrix4();
-      matrix.makeRotationZ(t * Math.PI);
-      matrix.scale(new THREE.Vector3(Math.cos(t * Math.PI), Math.sin(t * Math.PI), 1));
-      pointCloud.matrix.copy(matrix);
-      pointCloud.matrixAutoUpdate = false;
-    };
-    
     scene.add(pointCloud);
-    objects.push(pointCloud);
+    
+    // Create an animatable object with the pointCloud and its animation function
+    animatableObjects.push({
+      object: pointCloud,
+      animate: (t: number) => {
+        // Apply transformation matrix
+        const matrix = new THREE.Matrix4();
+        matrix.makeRotationZ(t * Math.PI);
+        matrix.scale(new THREE.Vector3(Math.cos(t * Math.PI), Math.sin(t * Math.PI), 1));
+        pointCloud.matrix.copy(matrix);
+        pointCloud.matrixAutoUpdate = false;
+      }
+    });
   }
 
-  return objects;
+  return animatableObjects;
 }
 
 async function framesToVideo(frames: Uint8Array[], config: AnimationConfig): Promise<Blob> {
