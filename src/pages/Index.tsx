@@ -7,7 +7,7 @@ import LoadingAnimation from '@/components/LoadingAnimation';
 import { generateUUID } from '@/lib/utils';
 import { savePromptToHistory } from '@/lib/historyUtils';
 import { generateMathAnimation, renderAnimation } from '@/lib/gemini';
-import { uploadVideo } from '@/lib/cloudinary';
+import { uploadVideo, getThumbnailUrl } from '@/lib/cloudinary';
 import { toast } from '@/hooks/use-toast';
 
 const examplePrompts = [
@@ -48,7 +48,7 @@ const Index = () => {
         prompt,
         timestamp: new Date().toISOString(),
         videoUrl,
-        thumbnailUrl: `${videoUrl.split('upload/')[0]}upload/w_600,h_400,c_fill,g_auto/${videoUrl.split('upload/')[1]}`
+        thumbnailUrl: getThumbnailUrl(videoUrl)
       });
 
       toast({

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -7,6 +6,7 @@ import PromptInput from '@/components/PromptInput';
 import { Button } from "@/components/ui/button";
 import { getPromptFromHistory } from '@/lib/historyUtils';
 import { toast } from '@/hooks/use-toast';
+import { getThumbnailUrl } from '@/lib/cloudinary';
 
 interface AnimationData {
   id: string;
