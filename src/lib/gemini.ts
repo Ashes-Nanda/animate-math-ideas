@@ -1,8 +1,8 @@
 
 import * as THREE from 'three';
 
-// Updated Gemini API endpoint with the correct version
-const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent';
+// Updated Gemini API endpoint to use Gemini 1.5 instead of Gemini Pro
+const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent';
 
 interface AnimationInstruction {
   type: string;
@@ -12,7 +12,7 @@ interface AnimationInstruction {
 
 export const generateMathAnimation = async (prompt: string): Promise<AnimationInstruction[]> => {
   try {
-    console.log("Sending request to Gemini API...");
+    console.log("Sending request to Gemini 1.5 API...");
     const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${import.meta.env.VITE_GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
@@ -44,7 +44,7 @@ export const generateMathAnimation = async (prompt: string): Promise<AnimationIn
       throw new Error('Invalid response format from Gemini API');
     }
     
-    console.log("Received response from Gemini API:", data.candidates[0].content.parts[0].text);
+    console.log("Received response from Gemini 1.5 API:", data.candidates[0].content.parts[0].text);
     const instructions = JSON.parse(data.candidates[0].content.parts[0].text);
     
     return instructions;
