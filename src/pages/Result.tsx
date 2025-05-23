@@ -1,26 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
-import VideoPlayer from '@/components/VideoPlayer';
-import PromptInput from '@/components/PromptInput';
-import { Button } from "@/components/ui/button";
-import { getPromptFromHistory } from '@/lib/historyUtils';
+import { getAllPromptHistory } from '@/lib/historyUtils';
+import { getVideoUrl } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { getThumbnailUrl } from '@/lib/cloudinary';
-
-interface AnimationData {
-  id: string;
-  prompt: string;
-  videoUrl: string;
-  thumbnailUrl?: string;
-  timestamp: string;
-}
 
 const Result = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [animation, setAnimation] = useState<AnimationData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string>('');
+  const [prompt, setPrompt] = useState<string>('');
 
   useEffect(() => {
     if (!id) {
@@ -29,84 +18,64 @@ const Result = () => {
     }
 
     // Get animation data from history
-    const data = getPromptFromHistory(id);
-    if (data) {
-      setAnimation(data);
-    } else {
+    const history = getAllPromptHistory();
+    const animation = history.find(item => item.id === id);
+
+    if (!animation) {
       toast({
-        title: "Animation not found",
-        description: "The requested animation could not be found.",
+        title: "Error",
+        description: "Animation not found",
         variant: "destructive"
       });
       navigate('/');
+      return;
     }
-  }, [id, navigate]);
 
-  const handleNewPrompt = (prompt: string) => {
-    setLoading(true);
-    // Similar implementation to Index page
-    // For demo purposes, simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      // Navigate to a new result page
-      const newId = Math.random().toString(36).substring(2, 15);
-      navigate(`/result/${newId}`);
-    }, 3000);
-  };
+    setPrompt(animation.prompt);
+    setVideoUrl(animation.videoUrl);
+  }, [id, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col math-pattern-background">
       <Header />
       
       <main className="flex-grow container max-w-7xl mx-auto px-4 py-8">
-        <div className="space-y-12">
-          {animation && (
-            <VideoPlayer 
-              videoUrl={animation.videoUrl} 
-              title={animation.prompt}
-            />
-          )}
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="text-center space-y-4">
+            <h1 className="text-3xl font-playfair font-bold">Your Animation</h1>
+            <p className="text-lg text-muted-foreground">{prompt}</p>
+          </div>
           
-          <section className="bg-card/30 backdrop-blur-sm rounded-lg p-6 border border-border">
-            <h2 className="text-xl font-medium mb-4">Generate Another Animation</h2>
-            <PromptInput onSubmit={handleNewPrompt} isLoading={loading} />
-          </section>
-          
-          {animation && (
-            <section className="bg-card/30 backdrop-blur-sm rounded-lg p-6 border border-border">
-              <h2 className="text-xl font-medium mb-4">About This Animation</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm text-muted-foreground">Prompt</h3>
-                  <p className="text-md">{animation.prompt}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm text-muted-foreground">Generated On</h3>
-                  <p className="text-md">{new Date(animation.timestamp).toLocaleString()}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm text-muted-foreground">Topics</h3>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {/* Mock tags - in a real app, these would be generated from the prompt */}
-                    <span className="px-2 py-1 text-xs rounded-full bg-blue-500/20 text-blue-300">
-                      {animation.prompt.includes("Eigen") ? "Eigenvectors" : 
-                       animation.prompt.includes("Fourier") ? "Fourier Series" : 
-                       animation.prompt.includes("matrix") ? "Matrices" :
-                       animation.prompt.includes("vector") ? "Vectors" :
-                       animation.prompt.includes("limit") ? "Limits" :
-                       animation.prompt.includes("chain rule") ? "Derivatives" :
-                       "Mathematics"}
-                    </span>
-                    <span className="px-2 py-1 text-xs rounded-full bg-purple-500/20 text-purple-300">
-                      {animation.prompt.toLowerCase().includes("calculus") || 
-                       animation.prompt.includes("limit") || 
-                       animation.prompt.includes("chain rule") ? "Calculus" : "Linear Algebra"}
-                    </span>
-                  </div>
-                </div>
+          <div className="aspect-video bg-card/30 backdrop-blur-sm rounded-lg overflow-hidden border border-border">
+            {videoUrl ? (
+              <video
+                src={videoUrl}
+                controls
+                className="w-full h-full"
+                autoPlay
+                loop
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <p className="text-muted-foreground">Loading animation...</p>
               </div>
-            </section>
-          )}
+            )}
+          </div>
+          
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={() => navigate('/')}
+              className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Create Another
+            </button>
+            <button
+              onClick={() => navigate('/history')}
+              className="px-6 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
+            >
+              View History
+            </button>
+          </div>
         </div>
       </main>
       

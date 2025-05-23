@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
 // Updated Gemini API endpoint to use Gemini 1.5 instead of Gemini Pro
@@ -10,6 +9,11 @@ interface AnimationInstruction {
   duration: number;
 }
 
+/**
+ * Generates animation instructions using the Gemini API
+ * @param prompt - The mathematical concept to visualize
+ * @returns Array of animation instructions
+ */
 export const generateMathAnimation = async (prompt: string): Promise<AnimationInstruction[]> => {
   try {
     console.log("Sending request to Gemini 1.5 API...");
@@ -45,9 +49,35 @@ export const generateMathAnimation = async (prompt: string): Promise<AnimationIn
     }
     
     console.log("Received response from Gemini 1.5 API:", data.candidates[0].content.parts[0].text);
-    const instructions = JSON.parse(data.candidates[0].content.parts[0].text);
     
-    return instructions;
+    // Improved JSON parsing with error handling
+    let rawText = data.candidates[0].content.parts[0].text;
+    try {
+      const jsonStart = rawText.indexOf('[');
+      const jsonEnd = rawText.lastIndexOf(']');
+      if (jsonStart === -1 || jsonEnd === -1) {
+        throw new Error('No JSON array found in response');
+      }
+      const jsonContent = rawText.slice(jsonStart, jsonEnd + 1);
+      const instructions = JSON.parse(jsonContent);
+      
+      // Validate instructions format
+      if (!Array.isArray(instructions)) {
+        throw new Error('Instructions must be an array');
+      }
+      
+      // Validate each instruction
+      instructions.forEach((instruction, index) => {
+        if (!instruction.type || !instruction.parameters || typeof instruction.duration !== 'number') {
+          throw new Error(`Invalid instruction format at index ${index}`);
+        }
+      });
+      
+      return instructions;
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError);
+      throw new Error('Failed to parse animation instructions');
+    }
   } catch (error) {
     console.error('Error generating with Gemini:', error);
     
@@ -57,13 +87,17 @@ export const generateMathAnimation = async (prompt: string): Promise<AnimationIn
   }
 };
 
-// Function to generate fallback instructions when the API fails
+/**
+ * Generates fallback animation instructions when the API fails
+ * @param prompt - The mathematical concept to visualize
+ * @returns Array of animation instructions
+ */
 const generateFallbackInstructions = (prompt: string): AnimationInstruction[] => {
   const promptLower = prompt.toLowerCase();
   const instructions: AnimationInstruction[] = [];
   
+  // Eigenvector visualization
   if (promptLower.includes('eigen')) {
-    // Eigenvector visualization
     instructions.push({
       type: 'vector',
       parameters: {
@@ -94,8 +128,9 @@ const generateFallbackInstructions = (prompt: string): AnimationInstruction[] =>
       },
       duration: 5
     });
-  } else if (promptLower.includes('fourier') || promptLower.includes('series')) {
-    // Fourier series visualization
+  } 
+  // Fourier series visualization
+  else if (promptLower.includes('fourier') || promptLower.includes('series')) {
     instructions.push({
       type: 'circle',
       parameters: {
@@ -112,8 +147,9 @@ const generateFallbackInstructions = (prompt: string): AnimationInstruction[] =>
       },
       duration: 5
     });
-  } else if (promptLower.includes('matrix') || promptLower.includes('transformation')) {
-    // Matrix transformation visualization
+  } 
+  // Matrix transformation visualization
+  else if (promptLower.includes('matrix') || promptLower.includes('transformation')) {
     instructions.push({
       type: 'matrix',
       parameters: {
@@ -128,12 +164,15 @@ const generateFallbackInstructions = (prompt: string): AnimationInstruction[] =>
       type: 'transform',
       parameters: {
         scale: 2,
-        rotate: Math.PI / 4
+        rotateX: Math.PI / 4,
+        rotateY: Math.PI / 4,
+        rotateZ: 0
       },
       duration: 5
     });
-  } else if (promptLower.includes('vector') || promptLower.includes('projection')) {
-    // Vector projection visualization
+  } 
+  // Vector projection visualization
+  else if (promptLower.includes('vector') || promptLower.includes('projection')) {
     instructions.push({
       type: 'vector',
       parameters: {
@@ -156,8 +195,24 @@ const generateFallbackInstructions = (prompt: string): AnimationInstruction[] =>
       },
       duration: 5
     });
-  } else {
-    // Default visualization for any other prompt
+  } 
+  // Function graph visualization
+  else if (promptLower.includes('function') || promptLower.includes('graph')) {
+    instructions.push({
+      type: 'graph',
+      parameters: {
+        points: [
+          [-1, -1, 0],
+          [0, 0, 0],
+          [1, 1, 0]
+        ],
+        color: 0xff00ff
+      },
+      duration: 5
+    });
+  }
+  // Default visualization for any other prompt
+  else {
     instructions.push({
       type: 'circle',
       parameters: {
@@ -182,6 +237,11 @@ const generateFallbackInstructions = (prompt: string): AnimationInstruction[] =>
   return instructions;
 };
 
+/**
+ * Renders the animation based on the provided instructions
+ * @param instructions - Array of animation instructions
+ * @returns Promise resolving to a video blob
+ */
 export const renderAnimation = async (instructions: AnimationInstruction[]): Promise<Blob> => {
   // Set up Three.js scene
   const scene = new THREE.Scene();
@@ -237,7 +297,43 @@ export const renderAnimation = async (instructions: AnimationInstruction[]): Pro
         object = gridHelper;
         break;
 
+      case 'transform':
+        // Simple scale and rotation of a cube or vector
+        const box = new THREE.Mesh(
+          new THREE.BoxGeometry(1, 1, 1),
+          new THREE.MeshBasicMaterial({ color: instruction.parameters.color || 0x00ff00 })
+        );
+        box.scale.set(
+          instruction.parameters.scale || 1,
+          instruction.parameters.scale || 1,
+          instruction.parameters.scale || 1
+        );
+        box.rotation.set(
+          instruction.parameters.rotateX || 0,
+          instruction.parameters.rotateY || 0,
+          instruction.parameters.rotateZ || 0
+        );
+        object = box;
+        break;
+
+      case 'graph':
+        // Render simple coordinate axes or a line plot
+        const points = instruction.parameters.points || [
+          new THREE.Vector3(-1, -1, 0),
+          new THREE.Vector3(1, 1, 0)
+        ];
+        const graphPoints = new THREE.BufferGeometry().setFromPoints(
+          points.map((p: number[]) => new THREE.Vector3(p[0], p[1], p[2]))
+        );
+        const graphMaterial = new THREE.LineBasicMaterial({ 
+          color: instruction.parameters.color || 0xff00ff 
+        });
+        const graphLine = new THREE.Line(graphPoints, graphMaterial);
+        object = graphLine;
+        break;
+
       default:
+        console.warn(`Unknown animation type: ${instruction.type}`);
         object = new THREE.Object3D();
     }
 
@@ -273,6 +369,21 @@ export const renderAnimation = async (instructions: AnimationInstruction[]): Pro
           break;
         case 'matrix':
           object.rotation.y = (time / instruction.duration) * Math.PI * 2;
+          break;
+        case 'transform':
+          object.rotation.x = time;
+          object.rotation.y = time;
+          object.scale.setScalar(1 + 0.5 * Math.sin(time));
+          break;
+        case 'graph':
+          // Animate graph points if needed
+          if (object instanceof THREE.Line) {
+            const positions = object.geometry.attributes.position;
+            for (let i = 0; i < positions.count; i++) {
+              positions.setY(i, positions.getY(i) + Math.sin(time + i) * 0.1);
+            }
+            positions.needsUpdate = true;
+          }
           break;
       }
     });
