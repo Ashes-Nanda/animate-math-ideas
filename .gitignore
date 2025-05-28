@@ -7,10 +7,75 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
 *.local
+
+# Environment files
+.env
+.env.*
+!.env.example
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.python-version
+venv/
+ENV/
+env/
+.env/
+.venv/
+
+# Media and temporary files
+backend/videos/
+backend/media/
+backend/temp/
+*.mp4
+*.mov
+*.avi
+*.wmv
+*.flv
+*.mkv
+*.webm
+*.gif
+*.jpg
+*.jpeg
+*.png
+*.svg
+*.ico
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +87,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+*.lnk
+
+# Build and cache
+.cache/
+.next/
+.nuxt/
+.temp/
+.tmp/
+.temp/
+.tmp/
+coverage/
+.nyc_output/
