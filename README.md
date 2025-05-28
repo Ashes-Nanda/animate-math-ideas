@@ -3,7 +3,6 @@
 
 A modern web application that transforms mathematical concepts into beautiful, interactive animations using Manim and AI.
 
-![Visual Math Animator](public/placeholder.svg)
 
 ## ✨ Features
 
