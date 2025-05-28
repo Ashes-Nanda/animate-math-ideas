@@ -1,73 +1,155 @@
-# Welcome to your Lovable project
 
-## Project info
+# Visual Math Animator
 
-**URL**: https://lovable.dev/projects/88f158f5-28a9-4519-8b29-ed737483c990
+A modern web application that transforms mathematical concepts into beautiful, interactive animations using Manim and AI.
 
-## How can I edit this code?
+![Visual Math Animator](public/placeholder.svg)
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+- 🎨 Convert natural language descriptions into mathematical animations
+- 🤖 Powered by Google's Gemini 1.5 AI for intelligent scene generation
+- 📊 Professional-grade animations using Manim
+- ⚡ Fast and responsive React-based UI
+- 🎯 Multiple quality settings for different use cases
+- 📱 Mobile-friendly design
+- 🎓 Support for different educational levels and styles
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/88f158f5-28a9-4519-8b29-ed737483c990) and start prompting.
+## 🚀 Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+Before you begin, ensure you have the following installed:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Python 3.8 or higher
+- Node.js 16 or higher
+- FFmpeg
+- Manim and its dependencies
+- Google Gemini API key
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1. Clone the repository:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+```bash
+git clone https://github.com/yourusername/animate-math-ideas.git
+cd animate-math-ideas
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install frontend dependencies:
 
-# Step 3: Install the necessary dependencies.
-npm i
+```bash
+npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Install backend dependencies:
+
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+4. Create a `.env` file in the root directory with your Gemini API key:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+### Running the Application
+
+1. Start the backend server:
+
+```bash
+cd backend
+python main.py
+```
+
+2. In a new terminal, start the frontend development server:
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+3. Visit `http://localhost:5173` in your browser to use the application.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🎮 Usage
 
-**Use GitHub Codespaces**
+1. Enter a mathematical concept you want to visualize
+2. Choose the quality level (low, medium, high)
+3. Select the educational level (basic, intermediate, advanced)
+4. Pick a presentation style (educational, fun, serious)
+5. Click "Generate Animation" and wait for your custom animation
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+**Example prompts:**
+- "Explain the Pythagorean theorem with a visual proof"
+- "Show how sine waves relate to the unit circle"
+- "Demonstrate matrix multiplication step by step"
 
-## What technologies are used for this project?
+## 🧠 Tech Stack
 
-This project is built with:
+### Frontend
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- React with TypeScript
+- Vite for build tooling
+- TailwindCSS for styling
+- Three.js for web-based animations
+- Custom React hooks for mobile and toast notifications
 
-## How can I deploy this project?
+### Backend
 
-Simply open [Lovable](https://lovable.dev/projects/88f158f5-28a9-4519-8b29-ed737483c990) and click on Share -> Publish.
+- FastAPI (Python)
+- Manim for mathematical animations
+- Google Gemini 1.5 AI for scene generation
+- FFmpeg for video processing
 
-## Can I connect a custom domain to my Lovable project?
+## 🧱 Project Structure
 
-Yes, you can!
+```
+├── frontend/
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── lib/           # Utility functions
+│   │   └── pages/         # Page components
+│   └── public/            # Static assets
+└── backend/
+    ├── main.py            # FastAPI server
+    ├── media/             # Generated media files
+    ├── temp/              # Temporary files
+    └── videos/            # Rendered animations
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🎬 Animation Guidelines
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+The application follows specific animation guidelines for consistent and professional results:
+
+### Text Timing
+
+- 2-second pauses for new text
+- 1-second pauses between steps
+- Smooth fade transitions
+
+### Element Management
+
+- Proper positioning to avoid overlap
+- Organized grouping of related elements
+- Clear visual hierarchy
+
+### Screen Management
+
+- Clean transitions between concepts
+- Readable text scaling
+- Professional typography
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- [Manim Community](https://www.manim.community/) for the amazing animation engine
+- [Google Gemini](https://deepmind.google/technologies/gemini/) for AI capabilities
+- [FastAPI](https://fastapi.tiangolo.com/) for the robust backend framework
+- All contributors and users of this project
+
+
